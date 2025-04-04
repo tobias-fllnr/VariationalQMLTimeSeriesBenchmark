@@ -1,0 +1,9 @@
+torch==2.5.1
+PennyLane==0.39.0
+numpy==2.0.2
+notebook==7.3.0
+reservoirpy==0.3.12
+nolds==0.6.1
+matplotlib==3.10.1
+scikit-learn==1.5.2
+pandas==2.2.3
