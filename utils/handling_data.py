@@ -2,6 +2,7 @@ import pandas as pd
 import torch
 import numpy as np
 
+
 class DataHandling:
     """Class to handle time series data loading, normalization, and splitting for training/testing."""
 
@@ -21,9 +22,24 @@ class DataHandling:
 
         # Predefined dataset metadata: file paths, lengths, and split sizes
         data_info = {
-            "mackey_1000": {"file_path": "./TimeseriesData/mackey_1000.csv", "data_length": 1000, "validation_size": 0.2, "test_size": 0.2},
-            "henon_1000":  {"file_path": "./TimeseriesData/henon_1000.csv", "data_length": 1000, "validation_size": 0.2, "test_size": 0.2},
-            "lorenz_1000": {"file_path": "./TimeseriesData/lorenz_1000.csv", "data_length": 1000, "validation_size": 0.2, "test_size": 0.2},
+            "mackey_1000": {
+                "file_path": "./TimeseriesData/mackey_1000.csv",
+                "data_length": 1000,
+                "validation_size": 0.2,
+                "test_size": 0.2,
+            },
+            "henon_1000": {
+                "file_path": "./TimeseriesData/henon_1000.csv",
+                "data_length": 1000,
+                "validation_size": 0.2,
+                "test_size": 0.2,
+            },
+            "lorenz_1000": {
+                "file_path": "./TimeseriesData/lorenz_1000.csv",
+                "data_length": 1000,
+                "validation_size": 0.2,
+                "test_size": 0.2,
+            },
         }
 
         # Load dataset metadata if label is found
@@ -37,7 +53,7 @@ class DataHandling:
 
         # Load the actual data and keep min/max values for normalization
         self.data, self.min_values, self.max_values = self.load_data()
-    
+
     def load_data(self):
         """
         Load data from CSV file and compute min/max values per column.
@@ -65,9 +81,11 @@ class DataHandling:
         """
         data = self.data.copy()
         for i, column in enumerate(self.data.columns):
-            data[column] = (data[column] - self.min_values[i]) / (self.max_values[i] - self.min_values[i])
+            data[column] = (data[column] - self.min_values[i]) / (
+                self.max_values[i] - self.min_values[i]
+            )
         return data
-    
+
     def inverse_transform(self, data):
         """
         Revert the normalization back to original data scale.
@@ -79,7 +97,9 @@ class DataHandling:
         - DataFrame with original scale values
         """
         for i, column in enumerate(data.columns):
-            data[column] = data[column] * (self.max_values[i] - self.min_values[i]) + self.min_values[i]
+            data[column] = (
+                data[column] * (self.max_values[i] - self.min_values[i]) + self.min_values[i]
+            )
         return data
 
     def get_training_and_test_data(self):
@@ -100,8 +120,10 @@ class DataHandling:
 
         # Construct input-output pairs with sliding window
         for i in range(len(data) - self.seq_length - self.prediction_step):
-            x.append(data.iloc[i:i+self.seq_length].values)  # Input sequence
-            y.append(data.iloc[i+self.seq_length+self.prediction_step-1].values)  # Prediction target
+            x.append(data.iloc[i : i + self.seq_length].values)  # Input sequence
+            y.append(
+                data.iloc[i + self.seq_length + self.prediction_step - 1].values
+            )  # Prediction target
 
         # Calculate indices to split into train/validation/test
         split_index_validation = int(len(x) * (1 - self.test_size - self.validation_size))
@@ -112,11 +134,22 @@ class DataHandling:
 
         # Convert to PyTorch tensors and split according to calculated indices
         inputs_training = torch.tensor(x[:split_index_validation], dtype=torch.float32)
-        inputs_validation = torch.tensor(x[split_index_validation:split_index_test], dtype=torch.float32)
+        inputs_validation = torch.tensor(
+            x[split_index_validation:split_index_test], dtype=torch.float32
+        )
         inputs_testing = torch.tensor(x[split_index_test:], dtype=torch.float32)
 
         labels_training = torch.tensor(y[:split_index_validation], dtype=torch.float32)
-        labels_validation = torch.tensor(y[split_index_validation:split_index_test], dtype=torch.float32)
+        labels_validation = torch.tensor(
+            y[split_index_validation:split_index_test], dtype=torch.float32
+        )
         labels_testing = torch.tensor(y[split_index_test:], dtype=torch.float32)
 
-        return inputs_training, labels_training, inputs_validation, labels_validation, inputs_testing, labels_testing
+        return (
+            inputs_training,
+            labels_training,
+            inputs_validation,
+            labels_validation,
+            inputs_testing,
+            labels_testing,
+        )

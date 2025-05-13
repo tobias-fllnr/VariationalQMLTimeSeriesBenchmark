@@ -4,6 +4,7 @@ import torch
 import pandas as pd
 import torch.nn as nn
 import matplotlib.pyplot as plt
+
 plt.style.use("seaborn-v0_8-deep")
 
 
@@ -11,6 +12,7 @@ class Analyzer:
     """
     class to analyse the model after training
     """
+
     def __init__(self, version, model, trainer, data_handler):
         self.model = model
         self.trainer = trainer
@@ -27,6 +29,7 @@ class Analyzer:
             self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Hidden_size_{self.model.hidden_size}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
         elif self.model._get_name() in ["MLP"]:
             self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+
     def create_directory(self):
         """
         create the directory to store all data and plots of the specific training
@@ -48,8 +51,10 @@ class Analyzer:
             return True
         else:
             return False
-    
-    def save_training_output(self,trained_model, best_validation_model, cost_training, cost_validation, cost_testing):
+
+    def save_training_output(
+        self, trained_model, best_validation_model, cost_training, cost_validation, cost_testing
+    ):
         """
         save outputs of training
         """
@@ -71,8 +76,10 @@ class Analyzer:
         plt.legend()
         plt.savefig(self.path + "/cost_plot.pdf")
         plt.close()
-    
-    def evaluate_trained_model(self, inputs_testing, labels_testing, inputs_validation, labels_validation):
+
+    def evaluate_trained_model(
+        self, inputs_testing, labels_testing, inputs_validation, labels_validation
+    ):
         """
         evaluate the trained model
         """
@@ -95,22 +102,24 @@ class Analyzer:
                 "MAE Testing": mae_testing,
                 "MAE Validation": mae_validation,
                 "Correlation Testing": corr_testing,
-                "Correlation Validation": corr_validation
+                "Correlation Validation": corr_validation,
             }
             return pd.DataFrame(data, index=[0])
+
         self.model.load_state_dict(torch.load(self.path + "/trained_model", weights_only=True))
         self.model.eval()
         output_testing = self.model(inputs_testing)
         output_validation = self.model(inputs_validation)
         df_last = calculate_values(output_validation, output_testing)
         df_last.to_csv(self.path + "/loss_metrics_end.csv", index=False)
-        self.model.load_state_dict(torch.load(self.path + "/best_validation_model", weights_only=True))
+        self.model.load_state_dict(
+            torch.load(self.path + "/best_validation_model", weights_only=True)
+        )
         self.model.eval()
         output_testing = self.model(inputs_testing)
         output_validation = self.model(inputs_validation)
         df_best = calculate_values(output_validation, output_testing)
         df_best.to_csv(self.path + "/loss_metrics.csv", index=False)
-
 
     def save_training_info(self, cost_training, cost_validation, cost_testing, total_time):
         """
@@ -122,20 +131,32 @@ class Analyzer:
         testing_loss_100_epochs = cost_testing[99]
 
         data = {
-            "Metric": ["Epochs to Convergence", "Total Training Time", "Training Loss after 100 epochs", "Validation Loss after 100 epochs", "Testing Loss after 100 epochs"],
-            "Value": [num_epochs, total_time, training_loss_100_epochs, validation_loss_100_epochs, testing_loss_100_epochs]
+            "Metric": [
+                "Epochs to Convergence",
+                "Total Training Time",
+                "Training Loss after 100 epochs",
+                "Validation Loss after 100 epochs",
+                "Testing Loss after 100 epochs",
+            ],
+            "Value": [
+                num_epochs,
+                total_time,
+                training_loss_100_epochs,
+                validation_loss_100_epochs,
+                testing_loss_100_epochs,
+            ],
         }
         data = {
-                "Epochs to Convergence": num_epochs,
-                "Total Training Time": total_time,
-                "Training Loss after 100 epochs": training_loss_100_epochs,
-                "Validation Loss after 100 epochs": validation_loss_100_epochs,
-                "Testing Loss after 100 epochs": testing_loss_100_epochs
-            }
+            "Epochs to Convergence": num_epochs,
+            "Total Training Time": total_time,
+            "Training Loss after 100 epochs": training_loss_100_epochs,
+            "Validation Loss after 100 epochs": validation_loss_100_epochs,
+            "Testing Loss after 100 epochs": testing_loss_100_epochs,
+        }
 
         df = pd.DataFrame(data, index=[0])
         df.to_csv(self.path + "/training_info.csv", index=False)
-        
+
     def get_number_of_parameters(self):
         """
         get the number of parameters of the model
