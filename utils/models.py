@@ -1,8 +1,10 @@
-import pennylane as qml
-import torch.nn as nn
-import torch
 import random
-from typing import Any, Tuple, List
+from typing import Any, List, Tuple
+
+import pennylane as qml
+import torch
+import torch.nn as nn
+
 
 def print_parameters(model: nn.Module) -> None:
     """

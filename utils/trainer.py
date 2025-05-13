@@ -1,10 +1,11 @@
-import torch
-import time
-import torch.nn as nn
-import numpy as np
-from sklearn.utils import shuffle
 import copy
-from typing import Any, Tuple, List
+import time
+from typing import Any, List, Tuple
+
+import numpy as np
+import torch
+import torch.nn as nn
+from sklearn.utils import shuffle
 
 
 class Trainer:

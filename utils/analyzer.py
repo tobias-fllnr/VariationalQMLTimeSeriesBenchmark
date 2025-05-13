@@ -1,10 +1,11 @@
 import os
-import numpy as np
-import torch
-import pandas as pd
-import torch.nn as nn
-import matplotlib.pyplot as plt
 from typing import Any, Optional
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
 
 plt.style.use("seaborn-v0_8-deep")
 

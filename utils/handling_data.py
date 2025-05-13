@@ -1,7 +1,9 @@
+from typing import List, Tuple
+
+import numpy as np
 import pandas as pd
 import torch
-import numpy as np
-from typing import Tuple, List
+
 
 class DataHandling:
     """Class to handle time series data loading, normalization, and splitting for training/testing."""
