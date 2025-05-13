@@ -71,6 +71,7 @@ def determine_memory(model_name: str, num_qubits: int, ansatz_type: str) -> int:
     Returns:
         int: Amount of memory in GB.
     """
+    memory = 0
     if model_name in ["vqc", "qlstm_paper"]:
         if num_qubits <= 6:
             memory = 2

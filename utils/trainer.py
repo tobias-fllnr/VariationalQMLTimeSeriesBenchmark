@@ -4,12 +4,28 @@ import torch.nn as nn
 import numpy as np
 from sklearn.utils import shuffle
 import copy
+from typing import Any, Tuple, List
 
 
 class Trainer:
     def __init__(
-        self, model, random_id=42, learning_rate=0.1, print_gradients=False, batch_size=64
-    ):
+        self,
+        model: nn.Module,
+        random_id: int = 42,
+        learning_rate: float = 0.1,
+        print_gradients: bool = False,
+        batch_size: int = 64
+    ) -> None:
+        """
+        Initialize the Trainer.
+
+        Args:
+            model (nn.Module): The model to be trained.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+            learning_rate (float, optional): Learning rate for optimizer. Defaults to 0.1.
+            print_gradients (bool, optional): Whether to print gradients during training. Defaults to False.
+            batch_size (int, optional): Batch size for training. Defaults to 64.
+        """
         super(Trainer, self).__init__()
         self.model = model
         self.random_id = random_id
@@ -21,13 +37,35 @@ class Trainer:
 
     def train(
         self,
-        inputs_training,
-        labels_training,
-        inputs_validation,
-        labels_validation,
-        inputs_testing,
-        labels_testing,
-    ):
+        inputs_training: torch.Tensor,
+        labels_training: torch.Tensor,
+        inputs_validation: torch.Tensor,
+        labels_validation: torch.Tensor,
+        inputs_testing: torch.Tensor,
+        labels_testing: torch.Tensor,
+    ) -> Tuple[
+        List[float], List[float], List[float], Any, Any, float
+    ]:
+        """
+        Train the model using the provided data.
+
+        Args:
+            inputs_training (torch.Tensor): Training input data.
+            labels_training (torch.Tensor): Training labels.
+            inputs_validation (torch.Tensor): Validation input data.
+            labels_validation (torch.Tensor): Validation labels.
+            inputs_testing (torch.Tensor): Testing input data.
+            labels_testing (torch.Tensor): Testing labels.
+
+        Returns:
+            Tuple containing:
+                - cost_training (List[float]): Training loss per epoch.
+                - cost_validation (List[float]): Validation loss per epoch.
+                - cost_testing (List[float]): Testing loss per epoch.
+                - model_end (Any): Model state dict at end of training.
+                - model_best_validation (Any): Model state dict with best validation loss.
+                - total_time (float): Total training time in seconds.
+        """
         time_start = time.time()
         cost_training = []
         cost_validation = []
@@ -103,14 +141,16 @@ class Trainer:
             total_time,
         )
 
-    def check_convergence(self, cost_validation):
-        """Check if the model has converged
-        Args:
-            cost_training: list of validation costs
-        Returns:
-            bool: True if the model has converged, False otherwise
+    def check_convergence(self, cost_validation: List[float]) -> bool:
         """
+        Check if the model has converged based on validation cost.
 
+        Args:
+            cost_validation (List[float]): List of validation costs.
+
+        Returns:
+            bool: True if the model has converged, False otherwise.
+        """
         if len(cost_validation) < 400:
             return False
         else:

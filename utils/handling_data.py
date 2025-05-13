@@ -1,21 +1,20 @@
 import pandas as pd
 import torch
 import numpy as np
-
+from typing import Tuple, List
 
 class DataHandling:
     """Class to handle time series data loading, normalization, and splitting for training/testing."""
 
-    def __init__(self, data_label, seq_length, prediction_step):
+    def __init__(self, data_label: str, seq_length: int, prediction_step: int) -> None:
         """
         Initialize DataHandling class.
 
-        Parameters:
-        - data_label_entry: Identifier for the dataset to be used.
-        - seq_length: Length of input sequences for the model.
-        - prediction_step: How many time steps ahead the model should predict.
+        Args:
+            data_label (str): Identifier for the dataset to be used.
+            seq_length (int): Length of input sequences for the model.
+            prediction_step (int): How many time steps ahead the model should predict.
         """
-
         self.data_label_entry = data_label
         self.seq_length = seq_length
         self.prediction_step = prediction_step
@@ -54,14 +53,15 @@ class DataHandling:
         # Load the actual data and keep min/max values for normalization
         self.data, self.min_values, self.max_values = self.load_data()
 
-    def load_data(self):
+    def load_data(self) -> Tuple[pd.DataFrame, List[float], List[float]]:
         """
         Load data from CSV file and compute min/max values per column.
 
         Returns:
-        - data: Pandas DataFrame containing the loaded data
-        - min_values: List of minimum values per column (for normalization)
-        - max_values: List of maximum values per column
+            Tuple[pd.DataFrame, List[float], List[float]]:
+                - data: Pandas DataFrame containing the loaded data
+                - min_values: List of minimum values per column (for normalization)
+                - max_values: List of maximum values per column
         """
         data = pd.read_csv(self.file_path)
         data = data.head(self.data_length)  # Truncate to specified length
@@ -72,12 +72,12 @@ class DataHandling:
             max_values.append(data[column].max())
         return data, min_values, max_values
 
-    def transform(self):
+    def transform(self) -> pd.DataFrame:
         """
         Normalize each column in the data to the [0, 1] range.
 
         Returns:
-        - Normalized data (Pandas DataFrame)
+            pd.DataFrame: Normalized data.
         """
         data = self.data.copy()
         for i, column in enumerate(self.data.columns):
@@ -86,15 +86,15 @@ class DataHandling:
             )
         return data
 
-    def inverse_transform(self, data):
+    def inverse_transform(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Revert the normalization back to original data scale.
 
-        Parameters:
-        - data: Pandas DataFrame with normalized values
+        Args:
+            data (pd.DataFrame): DataFrame with normalized values.
 
         Returns:
-        - DataFrame with original scale values
+            pd.DataFrame: DataFrame with original scale values.
         """
         for i, column in enumerate(data.columns):
             data[column] = (
@@ -102,17 +102,22 @@ class DataHandling:
             )
         return data
 
-    def get_training_and_test_data(self):
+    def get_training_and_test_data(
+        self,
+    ) -> Tuple[
+        torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+    ]:
         """
         Split the time series into training, validation, and test sets using sliding windows.
 
         Returns:
-        - inputs_training: Tensor of input sequences for training
-        - labels_training: Tensor of corresponding target values
-        - inputs_validation: Tensor for validation input sequences
-        - labels_validation: Corresponding targets
-        - inputs_testing: Tensor for testing input sequences
-        - labels_testing: Corresponding targets
+            Tuple containing:
+                - inputs_training (torch.Tensor): Input sequences for training
+                - labels_training (torch.Tensor): Corresponding target values
+                - inputs_validation (torch.Tensor): Validation input sequences
+                - labels_validation (torch.Tensor): Corresponding targets
+                - inputs_testing (torch.Tensor): Testing input sequences
+                - labels_testing (torch.Tensor): Corresponding targets
         """
         data = self.transform()
         x = []  # List to hold input sequences

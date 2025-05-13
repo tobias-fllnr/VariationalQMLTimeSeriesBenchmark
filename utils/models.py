@@ -2,15 +2,27 @@ import pennylane as qml
 import torch.nn as nn
 import torch
 import random
+from typing import Any, Tuple, List
 
+def print_parameters(model: nn.Module) -> None:
+    """
+    Print the names, values, and sizes of all trainable parameters in the model.
 
-def print_parameters(model):
+    Args:
+        model (nn.Module): The model whose parameters are to be printed.
+    """
     for name, param in model.named_parameters():
         if param.requires_grad:
             print(f"{name}: {param.data} {param.size()}")
 
 
-def print_total_parameters(model):
+def print_total_parameters(model: nn.Module) -> None:
+    """
+    Print the total number of trainable parameters in the model.
+
+    Args:
+        model (nn.Module): The model whose parameters are to be counted.
+    """
     total_parameters = 0
     for name, param in model.named_parameters():
         if param.requires_grad:
@@ -23,15 +35,28 @@ class VQC(nn.Module):
 
     def __init__(
         self,
-        num_qubits,
-        seq_length,
-        ansatz,
-        data_label,
-        random_id=42,
-        backend="default.qubit",
-        diff_method="best",
-        evaluation=False,
-    ):
+        num_qubits: int,
+        seq_length: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42,
+        backend: str = "default.qubit",
+        diff_method: str = "best",
+        evaluation: bool = False,
+    ) -> None:
+        """
+        Initialize the VQC model.
+
+        Args:
+            num_qubits (int): Number of qubits.
+            seq_length (int): Sequence length for input data.
+            ansatz (str): Ansatz type.
+            data_label (str): Data label for output layer size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+            backend (str, optional): PennyLane backend. Defaults to "default.qubit".
+            diff_method (str, optional): Differentiation method. Defaults to "best".
+            evaluation (bool, optional): Evaluation mode. Defaults to False.
+        """
         super(VQC, self).__init__()
         self.num_qubits = num_qubits
         self.seq_length = seq_length
@@ -66,7 +91,13 @@ class VQC(nn.Module):
 
         self.vqc_torch_layer.weights.requires_grad = True  # set to False for fixed weights
 
-    def vqc(self):
+    def vqc(self) -> nn.Module:
+        """
+        Build the variational quantum circuit as a PennyLane TorchLayer.
+
+        Returns:
+            nn.Module: PennyLane TorchLayer representing the VQC.
+        """
         if self.ansatz.startswith("paper_rivera-ruiz_with_inputlayer_"):
             num_layers = int(self.ansatz.split("_")[-1])
 
@@ -167,7 +198,16 @@ class VQC(nn.Module):
             weight_shapes = {"weights": (self.seq_length, self.num_qubits, parameter_blocks_count)}
             return qml.qnn.TorchLayer(circuit, weight_shapes, init_method=self.weight_init)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the VQC model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         x = torch.reshape(x, (x.size(0), -1))
         if self.ansatz.startswith(self.ansatz_input_layer_start):
             x = self.input_layer(x)
@@ -181,13 +221,24 @@ class QLSTM_Paper(nn.Module):
 
     def __init__(
         self,
-        num_qubits,
-        ansatz,
-        data_label,
-        random_id=42,
-        backend="default.qubit",
-        diff_method="best",
-    ):
+        num_qubits: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42,
+        backend: str = "default.qubit",
+        diff_method: str = "best",
+    ) -> None:
+        """
+        Initialize the QLSTM_Paper model.
+
+        Args:
+            num_qubits (int): Number of qubits.
+            ansatz (str): Ansatz type.
+            data_label (str): Data label for output layer size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+            backend (str, optional): PennyLane backend. Defaults to "default.qubit".
+            diff_method (str, optional): Differentiation method. Defaults to "best".
+        """
         super(QLSTM_Paper, self).__init__()
         self.num_qubits = num_qubits
         self.ansatz = ansatz
@@ -244,7 +295,16 @@ class QLSTM_Paper(nn.Module):
         self.vqc5 = qml.qnn.TorchLayer(self.VQC5, weight_shapes, init_method=self.weight_init)
         self.vqc6 = qml.qnn.TorchLayer(self.VQC6, weight_shapes, init_method=self.weight_init)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the QLSTM_Paper model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         batch_size, seq_length, features_size = x.size()
         h_t = torch.zeros(batch_size, self.num_qubits - features_size)  # hidden state
         c_t = torch.zeros(batch_size, self.num_qubits)  # cell state
@@ -268,14 +328,26 @@ class QLSTM_Linerar_Enhanced_Paper(nn.Module):
 
     def __init__(
         self,
-        num_qubits,
-        hidden_size,
-        ansatz,
-        data_label,
-        random_id=42,
-        backend="default.qubit",
-        diff_method="best",
-    ):
+        num_qubits: int,
+        hidden_size: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42,
+        backend: str = "default.qubit",
+        diff_method: str = "best",
+    ) -> None:
+        """
+        Initialize the QLSTM_Linerar_Enhanced_Paper model.
+
+        Args:
+            num_qubits (int): Number of qubits.
+            hidden_size (int): Hidden layer size.
+            ansatz (str): Ansatz type.
+            data_label (str): Data label for output layer size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+            backend (str, optional): PennyLane backend. Defaults to "default.qubit".
+            diff_method (str, optional): Differentiation method. Defaults to "best".
+        """
         super(QLSTM_Linerar_Enhanced_Paper, self).__init__()
         self.num_qubits = num_qubits
         self.hidden_size = hidden_size
@@ -338,7 +410,16 @@ class QLSTM_Linerar_Enhanced_Paper(nn.Module):
         self.linear_out_3 = nn.Linear(self.num_qubits, self.hidden_size)
         self.linear_out_4 = nn.Linear(self.num_qubits, self.hidden_size)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the QLSTM_Linerar_Enhanced_Paper model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         batch_size, seq_length, _ = x.size()
         h_t = torch.zeros(batch_size, self.hidden_size)  # hidden state
         c_t = torch.zeros(batch_size, self.hidden_size)  # cell state
@@ -362,15 +443,28 @@ class QRNN_Paper(nn.Module):
 
     def __init__(
         self,
-        num_qubits,
-        num_qubits_hidden,
-        seq_length,
-        ansatz,
-        data_label,
-        random_id=42,
-        backend="default.qubit",
-        diff_method="best",
-    ):
+        num_qubits: int,
+        num_qubits_hidden: int,
+        seq_length: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42,
+        backend: str = "default.qubit",
+        diff_method: str = "best",
+    ) -> None:
+        """
+        Initialize the QRNN_Paper model.
+
+        Args:
+            num_qubits (int): Total number of qubits.
+            num_qubits_hidden (int): Number of hidden qubits.
+            seq_length (int): Sequence length for input data.
+            ansatz (str): Ansatz type.
+            data_label (str): Data label for output layer size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+            backend (str, optional): PennyLane backend. Defaults to "default.qubit".
+            diff_method (str, optional): Differentiation method. Defaults to "best".
+        """
         super(QRNN_Paper, self).__init__()
         self.num_qubits = num_qubits
         self.seq_length = seq_length
@@ -397,7 +491,13 @@ class QRNN_Paper(nn.Module):
         self.dev = qml.device(self.backend, wires=num_qubits)
         self.vqc_torch_layer = self.vqc()
 
-    def vqc(self):
+    def vqc(self) -> nn.Module:
+        """
+        Build the variational quantum circuit as a PennyLane TorchLayer.
+
+        Returns:
+            nn.Module: PennyLane TorchLayer representing the VQC.
+        """
         if self.ansatz == "paper_no_reset":
             if self.data_label.startswith("lorenz"):
 
@@ -549,7 +649,16 @@ class QRNN_Paper(nn.Module):
                 weight_shapes = {"weights": (self.num_qubits, 4)}
                 return qml.qnn.TorchLayer(circuit, weight_shapes, init_method=self.weight_init)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the QRNN_Paper model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         if self.data_label.startswith(("lorenz", "henon")):
             x = torch.reshape(x, (x.size(0), -1))
         else:
@@ -560,7 +669,24 @@ class QRNN_Paper(nn.Module):
 
 
 class LSTM(nn.Module):
-    def __init__(self, hidden_size, ansatz, data_label, random_id=42):
+    """Classical LSTM model using PyTorch"""
+
+    def __init__(
+        self,
+        hidden_size: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42
+    ) -> None:
+        """
+        Initialize the LSTM model.
+
+        Args:
+            hidden_size (int): Hidden layer size.
+            ansatz (str): Ansatz type (should encode number of layers).
+            data_label (str): Data label for input/output size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+        """
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.ansatz = ansatz
@@ -584,14 +710,40 @@ class LSTM(nn.Module):
             )
             self.fc = nn.Linear(self.hidden_size, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the LSTM model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         out, _ = self.lstm(x)
         out = self.fc(out[:, -1, :])
         return out
 
 
 class RNN(nn.Module):
-    def __init__(self, hidden_size, ansatz, data_label, random_id=42):
+    """Classical RNN model using PyTorch"""
+
+    def __init__(
+        self,
+        hidden_size: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42
+    ) -> None:
+        """
+        Initialize the RNN model.
+
+        Args:
+            hidden_size (int): Hidden layer size.
+            ansatz (str): Ansatz type (should encode number of layers).
+            data_label (str): Data label for input/output size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+        """
         super(RNN, self).__init__()
         self.hidden_size = hidden_size
         self.ansatz = ansatz
@@ -615,14 +767,40 @@ class RNN(nn.Module):
             )
             self.fc = nn.Linear(self.hidden_size, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the RNN model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         out, _ = self.rnn(x)
         out = self.fc(out[:, -1, :])
         return out
 
 
 class MLP(nn.Module):
-    def __init__(self, seq_length, ansatz, data_label, random_id=42):
+    """Classical Multi-Layer Perceptron model using PyTorch"""
+
+    def __init__(
+        self,
+        seq_length: int,
+        ansatz: str,
+        data_label: str,
+        random_id: int = 42
+    ) -> None:
+        """
+        Initialize the MLP model.
+
+        Args:
+            seq_length (int): Sequence length for input data.
+            ansatz (str): Ansatz type (should encode activation and hidden sizes).
+            data_label (str): Data label for input/output size.
+            random_id (int, optional): Random seed for reproducibility. Defaults to 42.
+        """
         super(MLP, self).__init__()
         self.seq_length = seq_length
         self.ansatz = ansatz
@@ -661,12 +839,27 @@ class MLP(nn.Module):
 
         self.mlp_layers = nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the MLP model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         x = torch.reshape(x, (x.size(0), -1))
         x = self.mlp_layers(x)
         return x
 
-    def extract_hidden_sizes(self):
+    def extract_hidden_sizes(self) -> Tuple[str, List[int]]:
+        """
+        Extract activation function and hidden layer sizes from the ansatz string.
+
+        Returns:
+            Tuple[str, List[int]]: Activation function name and list of hidden sizes.
+        """
         parts = self.ansatz.split("_")
         activation = parts[0]
         numbers = parts[1:]
