@@ -6,6 +6,11 @@ To install the required packages, run:
 
 pip install -r requirements.txt
 
+## Running
+Tow options:
+slurm (preferred)
+no slurm (change -slurm "yes" to -slurm "no" in .sh files)
+
 ## Job Submission (SLURM)
 
 To submit jobs to a SLURM cluster, execute the `starting_run.sh` script. You will need to modify the script to load the appropriate modules and specify the path to your virtual environment.

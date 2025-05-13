@@ -1,40 +1,77 @@
+from typing import Dict, List, Tuple, Any
 import pandas as pd
-import itertools
 import numpy as np
-import json
 import os
+import json 
+import itertools
 import utils.models as models
 from utils.handling_data import DataHandling
 from utils.trainer import Trainer
 from utils.analyzer import Analyzer
 
 
-def load_json_file(model_name, version, submission_number):
+def load_json_file(config_path: str, version: str, model_name: str) -> dict:
+    """
+    Loads a JSON file, creates a directory for analyzed configurations, and writes the data to a new JSON file.
+
+    Args:
+        config_path (str): Path to the JSON configuration file.
+        version (str): Version identifier for the analyzed configuration.
+        model_name (str): Name of the model.
+
+    Returns:
+        dict: The loaded JSON data.
+
+    Raises:
+        FileNotFoundError: If the specified JSON file does not exist.
+    """
     # Define the directory path
-    path = f"./Submitted_Configurations/Version_{version}/{model_name}/{submission_number}.json"
+    path = config_path
     # Load the JSON file
     if not os.path.exists(path):
         raise FileNotFoundError(f"The file {path} does not exist.")
     with open(path, "r") as file:
         data = json.load(file)
 
-    path_trained = f"./Analyzed_Configurations/Version_{version}/{model_name}"
+    path_trained = f"../Analyzed_Configurations/Version_{version}/{model_name}"
     if not os.path.exists(path_trained):
         os.makedirs(path_trained)
     # Write the data as a JSON file in the path_trained
+    parts = os.path.normpath(config_path).split(os.sep)
+    submission_number = parts[-1].split(".")[0]
     output_path = os.path.join(path_trained, f"{submission_number}.json")
     with open(output_path, "w") as outfile:
         json.dump(data, outfile, indent=4)
     return data
 
 
-def generate_combinations(param_dict):
+def generate_combinations(param_dict: Dict[str, List]) -> List[Dict[str, any]]:
+    """
+    Generates all possible combinations of parameters from a dictionary of parameter lists.
+
+    Args:
+        param_dict (Dict[str, List]): A dictionary where keys are parameter names and values are lists of parameter values.
+
+    Returns:
+        List[Dict[str, any]]: A list of dictionaries, each representing a unique combination of parameters.
+    """
     keys, values = zip(*param_dict.items())
     combinations = [dict(zip(keys, combo)) for combo in itertools.product(*values)]
     return combinations
 
 
-def extract(config):
+def extract(config: Dict[str, Any], model_name: str, version: str) -> Tuple:
+    """
+    Extracts parameters from a configuration dictionary and initializes a model based on the model name.
+
+    Args:
+        config (Dict[str, Any]): Configuration dictionary containing parameter values.
+        model_name (str): Name of the model to initialize (e.g., "vqc").
+        version (str): Version identifier for the analyzed configuration.
+
+    Returns:
+        Tuple: A tuple containing extracted parameters and metrics.
+    """
     # Extract parameters
     random_id = config["random_ids"]
     data_label = config["data_labels"]
@@ -87,6 +124,9 @@ def extract(config):
         model = models.MLP(
             seq_length=seq_length, ansatz=ansatz, data_label=data_label, random_id=random_id
         )
+    else:
+        raise ValueError(f"Model {model_name} not recognized.")
+    
     data_handler = DataHandling(
         data_label=data_label, seq_length=seq_length, prediction_step=prediction_step
     )
@@ -140,7 +180,16 @@ def extract(config):
         return tupel
 
 
-def average_random_ids(df):
+def average_random_ids(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Averages metrics across random IDs in the DataFrame.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame containing metrics and random IDs.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged metrics.
+    """
     groupby_columns = [
         "Version",
         "Model",
@@ -169,7 +218,7 @@ def average_random_ids(df):
     aggregations = ["mean", "std", "min", "max", "median", "mad"]
 
     # Define a function to compute MAD (median absolute deviation)
-    def mad(series):
+    def mad(series: pd.Series) -> float:
         median = np.median(series)
         return np.median(np.abs(series - median))
 
@@ -211,7 +260,16 @@ def average_random_ids(df):
     return stats_df
 
 
-def hyperparameter_optimization(df):
+def hyperparameter_optimization(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Performs hyperparameter optimization by selecting the best configurations.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame containing metrics and configurations.
+
+    Returns:
+        pd.DataFrame: DataFrame with the best configurations for each group.
+    """
     hyper_opt_df = df[
         df["MSE Validation Mad"] > 0
     ]  # to ensure that the MAD is not zero which is the case when there is only training combination for this hyperparameter combination
@@ -225,7 +283,6 @@ def hyperparameter_optimization(df):
         "Number Qubits",
         "Hidden Size",
     ]
-    # groupby_columns_lr = ["Version", "Model", "Data", "Prediction Step", "Ansatz", "Number Qubits", "Sequence Length", "Epochs"]
 
     # Group the dataframe
     grouped_lr = hyper_opt_df.groupby(groupby_columns_lr, dropna=False)
@@ -242,54 +299,62 @@ def hyperparameter_optimization(df):
 
 
 if __name__ == "__main__":
+
     version = 1
-    model_name = "vqc"
-    submission_numbers = [1, 2, 3]
-    file_path = f"./Results/{model_name}_results.csv"
+    submittet_configs_paths = []
+    for dirpath, _, filenames in os.walk(f"../Submitted_Configurations/Version_{version}"):
+        for filename in filenames:
+            if filename.endswith('.json'):
+                full_path = os.path.join(dirpath, filename)
+                submittet_configs_paths.append(full_path)
+
     tupel_list = []
-    for num in submission_numbers:
-        configurations = load_json_file(model_name, version, num)
+    for config_path in submittet_configs_paths:
+        parts = os.path.normpath(config_path).split(os.sep)
+        model_name = parts[-2]
+        file_path = f"./Results/{model_name}_results.csv"
+        configurations = load_json_file(config_path, version, model_name)
         combinations = generate_combinations(configurations)
         for combo in combinations:
-            tupel = extract(combo)
+            tupel = extract(combo, model_name, version)
             tupel_list.append(tupel)
 
-    df_new = pd.DataFrame(
-        tupel_list,
-        columns=[
-            "Version",
-            "Model",
-            "Ansatz",
-            "Data",
-            "Random ID",
-            "Learning Rate",
-            "Number Qubits",
-            "Hidden Size",
-            "Sequence Length",
-            "Prediction Step",
-            "Batch Size",
-            "MSE Testing",
-            "MSE Validation",
-            "MAE Testing",
-            "MAE Validation",
-            "Correlation Testing",
-            "Correlation Validation",
-            "Num Parameters",
-            "Epochs to Convergance",
-            "Total Training Time",
-            "Training Loss after 100 epochs",
-            "Validation Loss after 100 epochs",
-            "Testing Loss after 100 epochs",
-        ],
-    )
-    if os.path.exists(file_path):
-        df_old = pd.read_csv(file_path)
-        df = pd.concat([df_old, df_new], ignore_index=True)
-    else:
-        df = df_new
-    df.to_csv(file_path, index=False)
-    df = pd.read_csv(file_path)
-    averaged_ids_df = average_random_ids(df)
-    averaged_ids_df.to_csv(f"./Results/{model_name}_averaged_ids.csv", index=False)
-    hyper_opt_df = hyperparameter_optimization(averaged_ids_df)
-    hyper_opt_df.to_csv(f"./Results/{model_name}_hyper_opt.csv", index=False)
+        df_new = pd.DataFrame(
+            tupel_list,
+            columns=[
+                "Version",
+                "Model",
+                "Ansatz",
+                "Data",
+                "Random ID",
+                "Learning Rate",
+                "Number Qubits",
+                "Hidden Size",
+                "Sequence Length",
+                "Prediction Step",
+                "Batch Size",
+                "MSE Testing",
+                "MSE Validation",
+                "MAE Testing",
+                "MAE Validation",
+                "Correlation Testing",
+                "Correlation Validation",
+                "Num Parameters",
+                "Epochs to Convergance",
+                "Total Training Time",
+                "Training Loss after 100 epochs",
+                "Validation Loss after 100 epochs",
+                "Testing Loss after 100 epochs",
+            ],
+        )
+        if os.path.exists(file_path):
+            df_old = pd.read_csv(file_path)
+            df = pd.concat([df_old, df_new], ignore_index=True)
+        else:
+            df = df_new
+        df.to_csv(file_path, index=False)
+        df = pd.read_csv(file_path)
+        averaged_ids_df = average_random_ids(df)
+        averaged_ids_df.to_csv(f"../Results/{model_name}_averaged_ids.csv", index=False)
+        hyper_opt_df = hyperparameter_optimization(averaged_ids_df)
+        hyper_opt_df.to_csv(f"../Results/{model_name}_hyper_opt.csv", index=False)

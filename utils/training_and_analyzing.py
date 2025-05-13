@@ -6,7 +6,7 @@ import time
 import argparse
 
 
-def train_and_analyse():
+def train_and_analyse(version, model_name, num_qubits, seq_length, ansatz, data_label, random_id, learning_rate, hidden_size, prediction_step, batch_size):
     if model_name == "vqc":
         model = models.VQC(
             num_qubits=num_qubits,
@@ -48,6 +48,9 @@ def train_and_analyse():
         model = models.MLP(
             seq_length=seq_length, ansatz=ansatz, data_label=data_label, random_id=random_id
         )
+    else:
+        raise ValueError(f"Model {model_name} is not supported.")
+    
     data_handler = DataHandling(
         data_label=data_label, seq_length=seq_length, prediction_step=prediction_step
     )
@@ -176,7 +179,7 @@ if __name__ == "__main__":
         num_qubits = args.number_qubits
         hidden_size = args.hidden_size
         batch_size = args.batch_size
-        train_and_analyse()
+        train_and_analyse(version, model_name, num_qubits, seq_length, ansatz, data_label, random_id, learning_rate, hidden_size, prediction_step, batch_size)
     else:
         version = 64
         model_name = "lstm"
@@ -189,7 +192,7 @@ if __name__ == "__main__":
         num_qubits = 4
         hidden_size = 32
         batch_size = 64
-        train_and_analyse()
+        train_and_analyse(version, model_name, num_qubits, seq_length, ansatz, data_label, random_id, learning_rate, hidden_size, prediction_step, batch_size)
 
     end = time.time()
     print("total_time for training and analyzing= ", end - start, flush=True)

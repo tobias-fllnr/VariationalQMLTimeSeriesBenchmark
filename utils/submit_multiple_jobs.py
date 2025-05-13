@@ -2,6 +2,7 @@ import itertools
 import os
 import json
 from typing import Dict, List, Any
+import argparse
 
 
 def generate_combinations(param_dict: Dict[str, List[Any]]) -> List[Dict[str, Any]]:
@@ -96,7 +97,7 @@ def determine_memory(model_name: str, num_qubits: int, ansatz_type: str) -> int:
     return memory
 
 
-def run_experiment(config: Dict[str, Any]) -> Any:
+def run_experiment(config: Dict[str, Any], slurm) -> Any:
     """
     Runs an experiment by extracting parameters from the configuration, preparing the SLURM job,
     and submitting it.
@@ -120,12 +121,19 @@ def run_experiment(config: Dict[str, Any]) -> Any:
     prediction_step = config["prediction_steps"]
     batch_size = config["batch_sizes"]
 
-    job_name = f"{version}_{model_name}_{data_label}_{random_id}_{learning_rate}_{num_qubits}_{hidden_size}_{ansatz_type}_{sequence_length}_{prediction_step}_{batch_size}"
-    command = f"srun python3 training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
-    script_filename = f"submit_{version}_{model_name}_{data_label}_{random_id}_{learning_rate}_{num_qubits}_{ansatz_type}_{prediction_step}_{sequence_length}_{batch_size}.sh"
-    memory = determine_memory(model_name, num_qubits, ansatz_type)
+    if slurm:
 
-    submit_job(job_name, memory, command, script_filename, combo)
+        job_name = f"{version}_{model_name}_{data_label}_{random_id}_{learning_rate}_{num_qubits}_{hidden_size}_{ansatz_type}_{sequence_length}_{prediction_step}_{batch_size}"
+        command = f"srun python3 training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
+        script_filename = f"submit_{version}_{model_name}_{data_label}_{random_id}_{learning_rate}_{num_qubits}_{ansatz_type}_{prediction_step}_{sequence_length}_{batch_size}.sh"
+        memory = determine_memory(model_name, num_qubits, ansatz_type)
+
+        submit_job(job_name, memory, command, script_filename, config)
+    
+    else:
+        # Run the command directly without SLURM
+        command = f"python3 training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
+        os.system(command)
 
     return version, model_name
 
@@ -143,7 +151,7 @@ def save_training_configuration(item: Dict[str, Any]) -> None:
     version = item["version"][0]
     model_name = item["model_names"][0]
     # Define the directory path
-    path = f"./Submitted_Configurations/Version_{version}/{model_name}"
+    path = f"../Submitted_Configurations/Version_{version}/{model_name}"
 
     # Ensure the directory exists
     if not os.path.exists(path):
@@ -163,9 +171,25 @@ def save_training_configuration(item: Dict[str, Any]) -> None:
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser(description="Submission Controller")
+    parser.add_argument(
+        "-model", "--model", type=str, help="models to train")
+    parser.add_argument(
+        "-slurm", "--slurm", type="str", help="yes or no")
+    
+    args = parser.parse_args()
+    model = args.model
+    slurm = args.slurm
+    if slurm == "yes":
+        slurm = True
+    else:
+        slurm = False
+
+    path_configurations = f"../Training_Configurations/configurations_{model}.json"
+
     try:
         # Read the JSON file
-        with open("./configurations_totrain.json", "r") as file:
+        with open(path_configurations, "r") as file:
             data = json.load(file)
 
         if not isinstance(data, list):
@@ -181,9 +205,9 @@ if __name__ == "__main__":
 
                     combinations = generate_combinations(item)
                     for combo in combinations:
-                        run_experiment(combo)
+                        run_experiment(combo, slurm)
 
-                    # Save the training configuration to ./Submitted_Configurations
+                    # Save the training configuration to ../Submitted_Configurations
                     save_training_configuration(item)
 
                 else:
@@ -192,8 +216,8 @@ if __name__ == "__main__":
                 print(f"Error processing item: {item}. Error: {e}")
 
     except FileNotFoundError:
-        print(f"The file {'configurations_totrain.json'} does not exist.")
+        print(f"The file {path_configurations} does not exist.")
     except json.JSONDecodeError:
-        print(f"Error decoding JSON in the file {'configurations_totrain.json'}.")
+        print(f"Error decoding JSON in the file {path_configurations}.")
 
     print("All jobs submitted.")

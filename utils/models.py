@@ -262,26 +262,25 @@ class QLSTM_Paper(nn.Module):
 
         self.dev = qml.device(self.backend, wires=num_qubits)
 
-        if self.ansatz.startswith("original_"):
-            num_layers = int(self.ansatz.split("_")[-1])
+        num_layers = int(self.ansatz.split("_")[-1])
 
-            def VQC(inputs, weights):
+        def VQC(inputs, weights):
+            for i in range(self.num_qubits):
+                qml.Hadamard(wires=i)
+                qml.RY(torch.arctan(inputs[:, i]), wires=i)
+                qml.RZ(torch.arctan(inputs[:, i] ** 2), wires=i)
+            for j in range(num_layers):
+                for i in range(self.num_qubits - 1):
+                    qml.CNOT(wires=[i, i + 1])
+                qml.CNOT(wires=[self.num_qubits - 1, 0])
+                for i in range(self.num_qubits - 1):
+                    qml.CNOT(wires=[i, i + 1])
+                qml.CNOT(wires=[self.num_qubits - 1, 0])
                 for i in range(self.num_qubits):
-                    qml.Hadamard(wires=i)
-                    qml.RY(torch.arctan(inputs[:, i]), wires=i)
-                    qml.RZ(torch.arctan(inputs[:, i] ** 2), wires=i)
-                for j in range(num_layers):
-                    for i in range(self.num_qubits - 1):
-                        qml.CNOT(wires=[i, i + 1])
-                    qml.CNOT(wires=[self.num_qubits - 1, 0])
-                    for i in range(self.num_qubits - 1):
-                        qml.CNOT(wires=[i, i + 1])
-                    qml.CNOT(wires=[self.num_qubits - 1, 0])
-                    for i in range(self.num_qubits):
-                        qml.Rot(weights[i][j][0], weights[i][j][1], weights[i][j][2], wires=i)
-                return [qml.expval(qml.PauliZ(wires=i)) for i in range(self.num_qubits)]
+                    qml.Rot(weights[i][j][0], weights[i][j][1], weights[i][j][2], wires=i)
+            return [qml.expval(qml.PauliZ(wires=i)) for i in range(self.num_qubits)]
 
-            weight_shapes = {"weights": (self.num_qubits, num_layers, 3)}
+        weight_shapes = {"weights": (self.num_qubits, num_layers, 3)}
 
         self.VQC1 = qml.QNode(VQC, self.dev, diff_method=self.diff_method, interface="torch")
         self.VQC2 = qml.QNode(VQC, self.dev, diff_method=self.diff_method, interface="torch")
@@ -375,26 +374,25 @@ class QLSTM_Linerar_Enhanced_Paper(nn.Module):
 
         self.dev = qml.device(self.backend, wires=num_qubits)
 
-        if self.ansatz.startswith("original_"):
-            num_layers = int(self.ansatz.split("_")[-1])
+        num_layers = int(self.ansatz.split("_")[-1])
 
-            def VQC(inputs, weights):
+        def VQC(inputs, weights):
+            for i in range(self.num_qubits):
+                qml.Hadamard(wires=i)
+                qml.RY(torch.arctan(inputs[:, i]), wires=i)
+                qml.RZ(torch.arctan(inputs[:, i] ** 2), wires=i)
+            for j in range(num_layers):
+                for i in range(self.num_qubits - 1):
+                    qml.CNOT(wires=[i, i + 1])
+                qml.CNOT(wires=[self.num_qubits - 1, 0])
+                for i in range(self.num_qubits - 1):
+                    qml.CNOT(wires=[i, i + 1])
+                qml.CNOT(wires=[self.num_qubits - 1, 0])
                 for i in range(self.num_qubits):
-                    qml.Hadamard(wires=i)
-                    qml.RY(torch.arctan(inputs[:, i]), wires=i)
-                    qml.RZ(torch.arctan(inputs[:, i] ** 2), wires=i)
-                for j in range(num_layers):
-                    for i in range(self.num_qubits - 1):
-                        qml.CNOT(wires=[i, i + 1])
-                    qml.CNOT(wires=[self.num_qubits - 1, 0])
-                    for i in range(self.num_qubits - 1):
-                        qml.CNOT(wires=[i, i + 1])
-                    qml.CNOT(wires=[self.num_qubits - 1, 0])
-                    for i in range(self.num_qubits):
-                        qml.Rot(weights[i][j][0], weights[i][j][1], weights[i][j][2], wires=i)
-                return [qml.expval(qml.PauliZ(wires=i)) for i in range(self.num_qubits)]
+                    qml.Rot(weights[i][j][0], weights[i][j][1], weights[i][j][2], wires=i)
+            return [qml.expval(qml.PauliZ(wires=i)) for i in range(self.num_qubits)]
 
-            weight_shapes = {"weights": (self.num_qubits, num_layers, 3)}
+        weight_shapes = {"weights": (self.num_qubits, num_layers, 3)}
 
         self.VQC1 = qml.QNode(VQC, self.dev, diff_method=self.diff_method, interface="torch")
         self.VQC2 = qml.QNode(VQC, self.dev, diff_method=self.diff_method, interface="torch")
@@ -571,7 +569,7 @@ class QRNN_Paper(nn.Module):
 
                 weight_shapes = {"weights": (self.num_qubits, 4)}
                 return qml.qnn.TorchLayer(circuit, weight_shapes, init_method=self.weight_init)
-        if self.ansatz == "paper_reset":
+        elif self.ansatz == "paper_reset":
             if self.data_label.startswith("lorenz"):
 
                 @qml.qnode(self.dev, diff_method=self.diff_method, interface="torch")

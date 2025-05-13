@@ -73,6 +73,7 @@ class Trainer:
         cost_testing = []
         converged = False
         min_validation_loss = np.inf
+        model_best_validation = None
         i = 0
         while not converged:
             i += 1

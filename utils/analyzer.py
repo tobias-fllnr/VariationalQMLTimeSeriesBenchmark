@@ -35,17 +35,17 @@ class Analyzer:
         self.trainer = trainer
         self.data_handler = data_handler
         if self.model._get_name() in ["VQC"]:
-            self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+            self.path = f"../Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
         elif self.model._get_name() in ["QLSTM_Paper"]:
-            self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+            self.path = f"../Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
         elif self.model._get_name() in ["QLSTM_Linerar_Enhanced_Paper"]:
-            self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/Hidden_size_{self.model.hidden_size}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+            self.path = f"../Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/Hidden_size_{self.model.hidden_size}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
         elif self.model._get_name() in ["QRNN_Paper"]:
-            self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/Num_qubits_data_{self.model.num_qubits_data}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+            self.path = f"../Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Num_qubits_{self.model.num_qubits}/Num_qubits_data_{self.model.num_qubits_data}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
         elif self.model._get_name() in ["LSTM", "RNN"]:
-            self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Hidden_size_{self.model.hidden_size}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+            self.path = f"../Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/Hidden_size_{self.model.hidden_size}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
         elif self.model._get_name() in ["MLP"]:
-            self.path = f"./Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
+            self.path = f"../Data/Version_{version}/{self.model._get_name()}/{self.data_handler.data_label}/{self.model.ansatz}/Sequence_length_{self.data_handler.seq_length}/Prediction_step_{self.data_handler.prediction_step}/ID_{self.model.random_id}_lr_{self.trainer.learning_rate}_batch_{self.trainer.batch_size}"
 
     def create_directory(self) -> None:
         """
@@ -73,6 +73,8 @@ class Analyzer:
         trained_model: nn.Module,
         best_validation_model: nn.Module,
         cost_training: np.ndarray,
+        cost_validation: np.ndarray,
+        cost_testing: np.ndarray
     ) -> None:
         """
         Save outputs of training.
@@ -85,6 +87,8 @@ class Analyzer:
         torch.save(trained_model, self.path + "/trained_model")
         torch.save(best_validation_model, self.path + "/best_validation_model")
         np.save(self.path + "/cost_training", cost_training)
+        np.save(self.path + "/cost_validation", cost_validation)
+        np.save(self.path + "/cost_testing", cost_testing)
 
     def plot_cost(
         self,
