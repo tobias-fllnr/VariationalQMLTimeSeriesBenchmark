@@ -1,7 +1,7 @@
-from handling_data import DataHandling
-import models
-from trainer import Trainer
-from analyzer import Analyzer
+from utils.handling_data import DataHandling
+import utils.models as models
+from utils.trainer import Trainer
+from utils.analyzer import Analyzer
 import time
 import argparse
 

@@ -3,10 +3,10 @@ import itertools
 import numpy as np
 import json
 import os
-import models
-from handling_data import DataHandling
-from trainer import Trainer
-from analyzer import Analyzer
+import utils.models as models
+from utils.handling_data import DataHandling
+from utils.trainer import Trainer
+from utils.analyzer import Analyzer
 
 
 def load_json_file(model_name, version, submission_number):
