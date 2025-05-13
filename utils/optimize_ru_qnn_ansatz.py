@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import json
 import os
+from typing import Dict, List, Any, Tuple, Optional
 import models
 from handling_data import DataHandling
 from trainer import Trainer
@@ -12,7 +13,21 @@ from analyzer import Analyzer
 model_name = "vqc"
 version = 1
 
-def load_json_file(model_name, version, submission_number):
+def load_json_file(model_name: str, version: int, submission_number: int) -> Dict[str, Any]:
+    """
+    Loads a JSON file, creates a directory for analyzed configurations, and writes the data to a new JSON file.
+
+    Args:
+        model_name (str): Name of the model.
+        version (int): Version identifier for the analyzed configuration.
+        submission_number (int): Submission number of the configuration.
+
+    Returns:
+        Dict[str, Any]: The loaded JSON data.
+
+    Raises:
+        FileNotFoundError: If the specified JSON file does not exist.
+    """
     # Define the directory path
     path = f"../Submitted_Configurations/Version_{version}/{model_name}/{submission_number}.json"
     # Load the JSON file
@@ -31,13 +46,31 @@ def load_json_file(model_name, version, submission_number):
     return data
 
 
-def generate_combinations(param_dict):
+def generate_combinations(param_dict: Dict[str, List[Any]]) -> List[Dict[str, Any]]:
+    """
+    Generates all possible combinations of parameters from a dictionary of parameter lists.
+
+    Args:
+        param_dict (Dict[str, List[Any]]): A dictionary where keys are parameter names and values are lists of parameter values.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries, each representing a unique combination of parameters.
+    """
     keys, values = zip(*param_dict.items())
     combinations = [dict(zip(keys, combo)) for combo in itertools.product(*values)]
     return combinations
 
 
-def extract(config):
+def extract(config: Dict[str, Any]) -> Optional[Tuple]:
+    """
+    Extracts parameters from a configuration dictionary, initializes a model, and retrieves metrics.
+
+    Args:
+        config (Dict[str, Any]): Configuration dictionary containing parameter values.
+
+    Returns:
+        Optional[Tuple]: A tuple containing extracted parameters and metrics, or None if metrics are not available.
+    """
     # Extract parameters
     random_id = config["random_ids"]
     data_label = config["data_labels"]
