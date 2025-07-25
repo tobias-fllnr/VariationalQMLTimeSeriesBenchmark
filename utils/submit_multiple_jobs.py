@@ -124,7 +124,7 @@ def run_experiment(config: Dict[str, Any], slurm) -> Any:
     if slurm:
 
         job_name = f"{version}_{model_name}_{data_label}_{random_id}_{learning_rate}_{num_qubits}_{hidden_size}_{ansatz_type}_{sequence_length}_{prediction_step}_{batch_size}"
-        command = f"srun python3 training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
+        command = f"srun python3 utils/training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
         script_filename = f"submit_{version}_{model_name}_{data_label}_{random_id}_{learning_rate}_{num_qubits}_{ansatz_type}_{prediction_step}_{sequence_length}_{batch_size}.sh"
         memory = determine_memory(model_name, num_qubits, ansatz_type)
 
@@ -132,7 +132,7 @@ def run_experiment(config: Dict[str, Any], slurm) -> Any:
     
     else:
         # Run the command directly without SLURM
-        command = f"python3 training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
+        command = f"python3 utils/training_and_analyzing.py -version {version} -model {model_name} -data {data_label} -id {random_id} -lr {learning_rate} -ansatz {ansatz_type} -seq_length {sequence_length} -pred_step {prediction_step} -num_qubits {num_qubits} -hidden_size {hidden_size} -batch_size {batch_size}"
         os.system(command)
 
     return version, model_name
@@ -151,7 +151,7 @@ def save_training_configuration(item: Dict[str, Any]) -> None:
     version = item["version"][0]
     model_name = item["model_names"][0]
     # Define the directory path
-    path = f"../Submitted_Configurations/Version_{version}/{model_name}"
+    path = f"./Submitted_Configurations/Version_{version}/{model_name}"
 
     # Ensure the directory exists
     if not os.path.exists(path):
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-model", "--model", type=str, help="models to train")
     parser.add_argument(
-        "-slurm", "--slurm", type="str", help="yes or no")
+        "-slurm", "--slurm", type=str, help="yes or no")
     
     args = parser.parse_args()
     model = args.model
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     else:
         slurm = False
 
-    path_configurations = f"../Training_Configurations/configurations_{model}.json"
+    path_configurations = f"./Training_Configurations/configurations_{model}.json"
 
     try:
         # Read the JSON file
@@ -207,7 +207,7 @@ if __name__ == "__main__":
                     for combo in combinations:
                         run_experiment(combo, slurm)
 
-                    # Save the training configuration to ../Submitted_Configurations
+                    # Save the training configuration to ./Submitted_Configurations
                     save_training_configuration(item)
 
                 else:

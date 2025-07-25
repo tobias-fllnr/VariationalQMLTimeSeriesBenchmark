@@ -33,7 +33,7 @@ def load_json_file(config_path: str, version: str, model_name: str) -> dict:
     with open(path, "r") as file:
         data = json.load(file)
 
-    path_trained = f"../Analyzed_Configurations/Version_{version}/{model_name}"
+    path_trained = f"./Analyzed_Configurations/Version_{version}/{model_name}"
     if not os.path.exists(path_trained):
         os.makedirs(path_trained)
     # Write the data as a JSON file in the path_trained
@@ -302,7 +302,7 @@ if __name__ == "__main__":
 
     version = 1
     submittet_configs_paths = []
-    for dirpath, _, filenames in os.walk(f"../Submitted_Configurations/Version_{version}"):
+    for dirpath, _, filenames in os.walk(f"./Submitted_Configurations/Version_{version}"):
         for filename in filenames:
             if filename.endswith('.json'):
                 full_path = os.path.join(dirpath, filename)
@@ -355,6 +355,6 @@ if __name__ == "__main__":
         df.to_csv(file_path, index=False)
         df = pd.read_csv(file_path)
         averaged_ids_df = average_random_ids(df)
-        averaged_ids_df.to_csv(f"../Results/{model_name}_averaged_ids.csv", index=False)
+        averaged_ids_df.to_csv(f"./Results/{model_name}_averaged_ids.csv", index=False)
         hyper_opt_df = hyperparameter_optimization(averaged_ids_df)
-        hyper_opt_df.to_csv(f"../Results/{model_name}_hyper_opt.csv", index=False)
+        hyper_opt_df.to_csv(f"./Results/{model_name}_hyper_opt.csv", index=False)

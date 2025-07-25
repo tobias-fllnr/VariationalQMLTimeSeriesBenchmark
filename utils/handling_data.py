@@ -17,7 +17,7 @@ class DataHandling:
             seq_length (int): Length of input sequences for the model.
             prediction_step (int): How many time steps ahead the model should predict.
         """
-        self.data_label_entry = data_label
+        self.data_label = data_label
         self.seq_length = seq_length
         self.prediction_step = prediction_step
 
@@ -44,11 +44,11 @@ class DataHandling:
         }
 
         # Load dataset metadata if label is found
-        if self.data_label_entry in data_info:
-            self.file_path = data_info[self.data_label_entry]["file_path"]
-            self.data_length = data_info[self.data_label_entry]["data_length"]
-            self.validation_size = data_info[self.data_label_entry]["validation_size"]
-            self.test_size = data_info[self.data_label_entry]["test_size"]
+        if self.data_label in data_info:
+            self.file_path = data_info[self.data_label]["file_path"]
+            self.data_length = data_info[self.data_label]["data_length"]
+            self.validation_size = data_info[self.data_label]["validation_size"]
+            self.test_size = data_info[self.data_label]["test_size"]
         else:
             raise ValueError("Data label not found in data_info")
 

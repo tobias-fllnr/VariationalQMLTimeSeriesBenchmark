@@ -29,14 +29,14 @@ def load_json_file(model_name: str, version: int, submission_number: int) -> Dic
         FileNotFoundError: If the specified JSON file does not exist.
     """
     # Define the directory path
-    path = f"../Submitted_Configurations/Version_{version}/{model_name}/{submission_number}.json"
+    path = f"./Submitted_Configurations/Version_{version}/{model_name}/{submission_number}.json"
     # Load the JSON file
     if not os.path.exists(path):
         raise FileNotFoundError(f"The file {path} does not exist.")
     with open(path, "r") as file:
         data = json.load(file)
 
-    path_trained = f"../Analyzed_Configurations/Version_{version}/{model_name}"
+    path_trained = f"./Analyzed_Configurations/Version_{version}/{model_name}"
     if not os.path.exists(path_trained):
         os.makedirs(path_trained)
     # Write the data as a JSON file in the path_trained
@@ -145,7 +145,7 @@ def extract(config: Dict[str, Any]) -> Optional[Tuple]:
     
 
 submission_numbers = [4, 5, 6]  # enter the submission numbers of the ru-QNN here
-file_path = "../Results/ru_vqc_ansatz_optimization_results.csv"
+file_path = "./Results/ru_vqc_ansatz_optimization_results.csv"
 tupel_list = []
 for num in submission_numbers:
     configurations = load_json_file(model_name, version, num)
@@ -190,7 +190,7 @@ else:
 df.to_csv(file_path, index=False)
 
 
-df = pd.read_csv("../Results/ru_vqc_ansatz_optimization_results.csv")
+df = pd.read_csv("./Results/ru_vqc_ansatz_optimization_results.csv")
 groupby_columns = [
     "Version",
     "Model",
@@ -204,7 +204,7 @@ groupby_columns = [
 grouped = df.groupby(groupby_columns)
 output_list = []  # List to store dictionaries for JSON
 
-with open("../Training_Configurations/configurations_best_ru_QNN.json", "w") as json_file:
+with open("./Training_Configurations/configurations_best_ru_QNN.json", "w") as json_file:
     json_file.write("[\n")  # Start the JSON array
     first = True  # To manage commas between objects
     for param, indices in grouped.groups.items():
