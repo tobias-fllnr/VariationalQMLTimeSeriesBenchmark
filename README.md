@@ -25,6 +25,6 @@ To install the required packages, run:
 
 To run the training of all models and all hyperparameters used in the paper run `start_training.sh`. The default setting is that the code can be executed on any machine. However the optimal way is to execute the training on a slurm cluster. When changing the flag `-slurm "no"` to `-slurm "yes"` the training can efficiently be parallelized on a slurm cluster. 
 
-Since different random initializations are only tested for the best ten ru-QNN ansätze, these models have to be trained after all single initialized ru-QNN models are trained. To find the best ten ansätze for each learning problem and to start the training of these run `optimize_ru_QNN.sh`. 
+Since different random initializations are only tested for the best ten ru-QNN ansätze, these models have to be trained after all single initialized ru-QNN models are trained. To find the best ten ansätze for each learning problem and to start the training of these run `optimize_ru_QNN.sh`. Again, a slurm cluster can be used when changing the flag `-slurm "no"` to `-slurm "yes"`.
 
 After all models have been trained run `hyperparameter_optimization.sh` to perform the hyperparameter optimization. This will create the `.csv` files in the folder `Results` with the detailed results and best hyperparameter configurations of each model and for each learning task. These files are subsequently used for creating the plots.

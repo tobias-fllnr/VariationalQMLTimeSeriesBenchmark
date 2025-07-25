@@ -4,10 +4,10 @@ import numpy as np
 import os
 import json 
 import itertools
-import utils.models as models
-from utils.handling_data import DataHandling
-from utils.trainer import Trainer
-from utils.analyzer import Analyzer
+import models as models
+from handling_data import DataHandling
+from trainer import Trainer
+from analyzer import Analyzer
 
 
 def load_json_file(config_path: str, version: str, model_name: str) -> dict:
