@@ -5,7 +5,9 @@ This repository contains the code to reproduce the results of the paper:
 
 <cite>Fellner, Tobias, et al. "Quantum vs. classical: A comprehensive benchmark study for predicting time series with variational quantum machine learning." arXiv preprint arXiv:2504.12416 (2025).</cite>
 
-## Installation
+## Requirements and Installation
+
+Python 3.10 or newer as well as bash is required.
 
 To install the required packages, run:
 
