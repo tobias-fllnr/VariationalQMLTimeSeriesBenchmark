@@ -1,0 +1,49 @@
+{
+    "version": [
+        1
+    ],
+    "model_names": [
+        "qrnn_paper"
+    ],
+    "random_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+    ],
+    "data_labels": [
+        "henon_1000"
+    ],
+    "learning_rates": [
+        0.001
+    ],
+    "num_qubits": [
+        7
+    ],
+    "hidden_sizes": [
+        3,
+        4
+    ],
+    "ansatz_types": [
+        "paper_no_reset"
+    ],
+    "sequence_lengths": [
+        4,
+        8,
+        16
+    ],
+    "prediction_steps": [
+        1,
+        2,
+        4
+    ],
+    "batch_sizes": [
+        64
+    ]
+}
