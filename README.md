@@ -3,7 +3,7 @@
 
 This repository contains the code to reproduce the results of the paper: 
 
-<cite>Fellner, Tobias, et al. "Quantum vs. classical: A comprehensive benchmark study for predicting time series with variational quantum machine learning." arXiv preprint arXiv:2504.12416 (2025).</cite>
+<cite>Fellner, Tobias, et al. "Quantum vs. classical: A comprehensive benchmark study for predicting time series with variational quantum machine learning." Mach. Learn.: Sci. Technol. 7 010501 (2026) [10.1088/2632-2153/ae365f](https://doi.org/10.1088/2632-2153/ae365f).</cite>
 
 ## Requirements and Installation
 
